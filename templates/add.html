@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Add Product - Amazon Price Watcher{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="fas fa-plus me-2"></i>Add Product</h1>
+        <p class="text-muted">Add a new Amazon product to track</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-shopping-cart me-2"></i>Product Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_product') }}">
+                    <div class="mb-3">
+                        <label for="url" class="form-label">Amazon Product URL</label>
+                        <input type="url" class="form-control" id="url" name="url"
+                               placeholder="https://amazon.com/dp/B123456789 or amazon.com/product-title/dp/B123456789"
+                               required>
+                        <div class="form-text">
+                            <strong>Supported formats:</strong>
+                            <ul class="mb-0 mt-1">
+                                <li>Standard: <code>https://amazon.com/dp/B123456789</code></li>
+                                <li>With title: <code>amazon.com/product-name/dp/B123456789</code></li>
+                                <li>International: <code>amazon.co.uk/dp/B123456789</code></li>
+                                <li>Mobile: <code>amazon.com/gp/product/B123456789</code></li>
+                                <li>With parameters: <code>amazon.com/dp/B123456789?ref=...</code></li>
+                            </ul>
+                            <small class="text-muted">We'll automatically clean and normalize your URL!</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary" onclick="console.log('Form submitted!')">
+                            <i class="fas fa-plus me-1"></i>Add Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle me-2"></i>How to get Amazon URLs</h6>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Go to Amazon and find the product you want to track</li>
+                    <li>Copy the URL from your browser's address bar</li>
+                    <li>Paste it in the form above</li>
+                    <li>We'll automatically fetch the current price and product details</li>
+                </ol>
+
+                <div class="alert alert-info" role="alert">
+                    <strong>Example URLs:</strong><br>
+                    <small class="font-monospace">https://www.amazon.com/dp/B08N5WRWNW</small><br>
+                    <small class="font-monospace">https://www.amazon.com/Echo-Dot-5th-Gen-2022-release/dp/B09B8V1LZ3</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

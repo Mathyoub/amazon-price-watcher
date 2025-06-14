@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Amazon Price Watcher{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+        <p class="text-muted">Monitor your Amazon products and track price changes</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_products }}</h4>
+                        <p class="card-text">Products Tracked</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-shopping-cart fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ products_with_prices }}</h4>
+                        <p class="card-text">With Prices</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title" id="monitoring-status">
+                            {% if monitoring_active %}Running{% else %}Stopped{% endif %}
+                        </h4>
+                        <p class="card-text">Monitoring</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-robot fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title" id="next-check">
+                            {% if next_check %}
+                                <span data-timestamp="{{ next_check }}">{{ next_check[:16].replace('T', ' ') }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </h6>
+                        <p class="card-text">Next Check</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Control Panel -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cog me-2"></i>Controls</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        {% if not monitoring_active %}
+                            <!-- Start Monitoring Form (only shown when not running) -->
+                            <form method="POST" action="{{ url_for('toggle_monitoring') }}" class="d-inline">
+                                <input type="hidden" name="action" value="start">
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-auto">
+                                        <label for="hours" class="form-label">Check every:</label>
+                                        <select name="hours" id="hours" class="form-select">
+                                            <option value="1">1 hour</option>
+                                            <option value="2">2 hours</option>
+                                            <option value="3">3 hours</option>
+                                            <option value="4">4 hours</option>
+                                            <option value="6">6 hours</option>
+                                            <option value="12" selected>12 hours</option>
+                                            <option value="24">24 hours</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-play me-1"></i>Start Monitoring
+                                        </button>
+                                    </div>
+                                    <div class="col-12 mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            More frequent monitoring provides faster alerts but uses more requests.
+                                            We add delays between checks to be respectful to Amazon's servers.
+                                        </small>
+                                    </div>
+                                </div>
+                            </form>
+                        {% else %}
+                            <!-- Stop Monitoring Button (only shown when running) -->
+                            <form method="POST" action="{{ url_for('toggle_monitoring') }}" class="d-inline">
+                                <input type="hidden" name="action" value="stop">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-stop me-1"></i>Stop Monitoring
+                                </button>
+                            </form>
+                            <div class="d-inline ms-3">
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-check-circle me-1"></i>Monitoring Active
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <form method="POST" action="{{ url_for('manual_check') }}" class="d-inline">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-sync me-1"></i>Manual Check
+                            </button>
+                        </form>
+                        <a href="{{ url_for('add_product') }}" class="btn btn-primary ms-2">
+                            <i class="fas fa-plus me-1"></i>Add Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list me-2"></i>Tracked Products</h5>
+            </div>
+            <div class="card-body">
+                {% if products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Price</th>
+                                    <th>Last Checked</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product_id, url, title, asin, price, checked_date, availability in products %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">{{ title or 'Unknown Title' }}</h6>
+                                                    <small class="text-muted">ASIN: {{ asin or 'Unknown' }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if price and price > 0 %}
+                                                <span class="h5 text-success">${{ "%.2f"|format(price) }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Not available</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if checked_date %}
+                                                <small data-utc-timestamp="{{ checked_date }}">{{ checked_date }}</small>
+                                            {% else %}
+                                                <small class="text-muted">Never</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if availability == 'In Stock' %}
+                                                <span class="badge bg-success">{{ availability }}</span>
+                                            {% elif availability == 'Out of Stock' %}
+                                                <span class="badge bg-danger">{{ availability }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ availability or 'Unknown' }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('product_detail', product_id=product_id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-chart-area me-1"></i>History
+                                            </a>
+                                            <a href="{{ url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-external-link-alt me-1"></i>View
+                                            </a>
+                                            <form method="POST" action="{{ url_for('remove_product', product_id=product_id) }}" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Remove this product from tracking?')">
+                                                    <i class="fas fa-trash me-1"></i>Remove
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h4>No products tracked yet</h4>
+                        <p class="text-muted">Add your first Amazon product to start tracking prices!</p>
+                        <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Add Your First Product
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update monitoring status periodically
+function updateStatus() {
+    fetch('/api/status')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('monitoring-status').textContent = data.monitoring ? 'Running' : 'Stopped';
+
+            const nextCheckElement = document.getElementById('next-check');
+            if (data.next_check) {
+                const nextCheck = new Date(data.next_check);
+                const formattedDate = nextCheck.toLocaleString('en-US', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                nextCheckElement.innerHTML = `<span data-timestamp="${data.next_check}">${formattedDate}</span>`;
+            } else {
+                nextCheckElement.textContent = '-';
+            }
+
+            // Refresh timestamp conversions in case the page was updated
+            convertTimestamps();
+        })
+        .catch(error => console.error('Error updating status:', error));
+}
+
+// Convert all timestamps to local time
+function convertTimestamps() {
+    document.querySelectorAll('[data-utc-timestamp]').forEach(element => {
+        const utcTimestamp = element.getAttribute('data-utc-timestamp');
+        if (utcTimestamp && utcTimestamp !== 'Never') {
+            try {
+                // Parse the UTC timestamp (format: YYYY-MM-DD HH:MM:SS)
+                const utcDate = new Date(utcTimestamp + ' UTC');
+                const localDate = utcDate.toLocaleString('en-US', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                element.textContent = localDate;
+            } catch (error) {
+                console.error('Error converting timestamp:', utcTimestamp, error);
+            }
+        }
+    });
+}
+
+// Format initial timestamp if present
+document.addEventListener('DOMContentLoaded', function() {
+    // Convert "Next Check" timestamp
+    const timestampElement = document.querySelector('[data-timestamp]');
+    if (timestampElement) {
+        const timestamp = timestampElement.getAttribute('data-timestamp');
+        if (timestamp) {
+            const date = new Date(timestamp);
+            const formattedDate = date.toLocaleString('en-US', {
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            timestampElement.textContent = formattedDate;
+        }
+    }
+
+    // Convert all "Last checked" timestamps
+    convertTimestamps();
+});
+
+// Update status every 30 seconds
+updateStatus();
+setInterval(updateStatus, 30000);
+</script>
+{% endblock %}

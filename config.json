@@ -1,0 +1,13 @@
+{
+    "name": "Amazon Price Watcher",
+    "version": "0.1.0",
+    "slug": "amazon_price_watcher",
+    "description": "Backend for Amazon Price Watcher integration",
+    "startup": "services",
+    "boot": "auto",
+    "ports": {
+      "5000/tcp": 5000
+    },
+    "ingress": false,
+    "panel_icon": "mdi:cart"
+  }

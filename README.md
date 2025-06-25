@@ -6,7 +6,7 @@ A simple command-line tool that tracks Amazon product prices in the background a
 
 - 🔍 **Track Any Amazon Product**: Add products by URL
 - 📊 **Price History**: Build historical price records over time
-- 🔄 **Background Monitoring**: Automatically checks prices every few hours
+- 🔄 **Background Monitoring**: Automatically checks prices every 30 minutes
 - 💾 **Local Database**: All data stored locally in SQLite
 - 🎯 **Deal Detection**: Compare current prices with historical data
 - 🖥️ **Simple CLI**: Easy-to-use command line interface
@@ -52,8 +52,10 @@ python price_watcher.py check
 
 ### Start Background Monitoring
 ```bash
-python price_watcher.py start --hours 12
+python price_watcher.py start
 ```
+
+**Note**: The background monitoring automatically checks prices every 30 minutes. This interval is fixed to provide consistent monitoring while being respectful to Amazon's servers.
 
 ### Remove a Product
 ```bash
@@ -68,7 +70,7 @@ python price_watcher.py test "https://www.amazon.com/dp/PRODUCT_ID"
 ## How It Works
 
 1. **Product Addition**: When you add a product URL, the tool extracts the ASIN (Amazon product ID) and fetches initial product information
-2. **Price Monitoring**: The background scheduler runs every few hours to check current prices
+2. **Price Monitoring**: The background scheduler runs every 30 minutes to check current prices
 3. **Data Storage**: All price data is stored in a local SQLite database (`price_watcher.db`)
 4. **Historical Analysis**: You can view price trends and identify when items go on sale
 

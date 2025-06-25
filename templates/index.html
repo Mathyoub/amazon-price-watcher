@@ -98,18 +98,6 @@
                                 <input type="hidden" name="action" value="start">
                                 <div class="row g-3 align-items-end">
                                     <div class="col-auto">
-                                        <label for="hours" class="form-label">Check every:</label>
-                                        <select name="hours" id="hours" class="form-select">
-                                            <option value="1">1 hour</option>
-                                            <option value="2">2 hours</option>
-                                            <option value="3">3 hours</option>
-                                            <option value="4">4 hours</option>
-                                            <option value="6">6 hours</option>
-                                            <option value="12" selected>12 hours</option>
-                                            <option value="24">24 hours</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-auto">
                                         <button type="submit" class="btn btn-success">
                                             <i class="fas fa-play me-1"></i>Start Monitoring
                                         </button>
@@ -117,7 +105,7 @@
                                     <div class="col-12 mt-2">
                                         <small class="text-muted">
                                             <i class="fas fa-info-circle me-1"></i>
-                                            More frequent monitoring provides faster alerts but uses more requests.
+                                            Monitoring will check prices every 30 minutes automatically.
                                             We add delays between checks to be respectful to Amazon's servers.
                                         </small>
                                     </div>

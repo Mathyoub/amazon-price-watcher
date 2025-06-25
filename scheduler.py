@@ -61,8 +61,8 @@ class PriceScheduler:
 
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Price check completed.")
 
-    def start_scheduler(self, check_frequency_hours: int = 12):
-        """Start the background scheduler."""
+    def start_scheduler(self):
+        """Start the background scheduler with fixed 30-minute intervals."""
         if self.running:
             print("Scheduler is already running.")
             return
@@ -70,8 +70,8 @@ class PriceScheduler:
         # Clear any existing jobs
         schedule.clear()
 
-        # Schedule price checks
-        schedule.every(check_frequency_hours).hours.do(self.check_all_prices)
+        # Schedule price checks every 30 minutes
+        schedule.every(30).minutes.do(self.check_all_prices)
 
         # Run an initial check immediately in a separate thread
         # (don't schedule it, just run it once)
@@ -82,7 +82,7 @@ class PriceScheduler:
         self.thread = threading.Thread(target=self._run_scheduler, daemon=True)
         self.thread.start()
 
-        print(f"Price scheduler started. Will check prices every {check_frequency_hours} hours.")
+        print("Price scheduler started. Will check prices every 30 minutes.")
         print("Running initial price check now...")
 
     def _run_scheduler(self):

@@ -192,7 +192,6 @@ def toggle_monitoring():
     global scheduler, scheduler_thread
 
     action = request.form.get('action')
-    hours = int(request.form.get('hours', 12))
 
     if action == 'start':
         if scheduler and scheduler.running:
@@ -200,11 +199,11 @@ def toggle_monitoring():
         else:
             scheduler = PriceScheduler()
             scheduler_thread = threading.Thread(
-                target=lambda: scheduler.start_scheduler(hours),
+                target=lambda: scheduler.start_scheduler(),
                 daemon=True
             )
             scheduler_thread.start()
-            flash(f'Background monitoring started! Checking every {hours} hours.', 'success')
+            flash('Background monitoring started! Checking every 30 minutes.', 'success')
 
     elif action == 'stop':
         if scheduler and scheduler.running:

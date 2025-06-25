@@ -122,14 +122,13 @@ def check():
     scheduler.run_manual_check()
 
 @cli.command()
-@click.option('--hours', default=12, help='Check frequency in hours')
-def start(hours):
+def start():
     """Start the background price monitoring service."""
     scheduler = PriceScheduler()
 
     try:
-        scheduler.start_scheduler(hours)
-        click.echo(f"🚀 Price monitoring started! Checking every {hours} hours.")
+        scheduler.start_scheduler()
+        click.echo("🚀 Price monitoring started! Checking every 30 minutes.")
         click.echo("Press Ctrl+C to stop...")
 
         # Keep the main thread alive
